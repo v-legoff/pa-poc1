@@ -1,0 +1,22 @@
+This first Proof Of Concept must study the models structure and provide
+an easy-to-use API (and Python console).
+1. The model structure must be developed and tested.  Even if no
+   compatibility proof has to be given, the compatibility between
+   multiple drivers must be carefully thought through.  The concept
+   is simple: the model's have to be represented in Python code which
+   MUST NOT change whatever the driver (PostgreSQL, MySQL...).  The MySQL
+   driver will be the first one to be developed (through the pymysql
+   library) but others must be easily added.
+2. A Python API must provide access to the created models via classes
+   and functions.  Firstly and above all, each model should provide
+   functionalities for manipulating these objects (create, edit, show
+   and delete) and the set of objects (get, filter).
+3. A very useful tool which will be easy to deploy after those two
+   first steps would be a Python console with an easy access to the
+   developed API.  Thus, it should be easy to create, edit, show and
+   delete informations via a simple method or function call.
+
+Note: The future POCs should, if appliable, use the preview POCs to
+      propose more functionalities.  This means that the directory
+      structure, classes name and so forth could be changed, but
+      those changes should be avoided if possible.
