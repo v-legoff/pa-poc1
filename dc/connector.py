@@ -28,6 +28,8 @@
 
 """This file contains the DataConnector class, defined below."""
 
+from model.functions import *
+
 class DataConnector:
     
     """Class representing a data connector, a wrapper of a data access.
@@ -51,7 +53,7 @@ class DataConnector:
         self.objects_tree = {}
         self.tables = {}
     
-    def record_tables(classes):
+    def record_tables(self, classes):
         """Record the given classes.
         
         The parameter must be a list of classes. Each class must
@@ -63,7 +65,7 @@ class DataConnector:
     
     def record_model(self, model):
         """Record the given model, a subclass of model.Model."""
-        name = model.model_name()
+        name = get_name(model)
         self.tables[name] = model
         self.objects_tree[name] = []
-    
+        return name

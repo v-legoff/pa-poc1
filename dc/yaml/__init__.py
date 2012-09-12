@@ -44,6 +44,7 @@ except ImportError:
 
 from dc.connector import DataConnector
 from dc import exceptions
+from model.functions import *
 
 class YAMLConnector(DataConnector):
     
@@ -103,15 +104,15 @@ class YAMLConnector(DataConnector):
     
     def record_model(self, model):
         """Record the given model."""
-        DataConnector.record_model(self, model)
+        name = DataConnector.record_model(self, model)
         filename = self.location + "/" + name + ".yml"
         if os.path.exists(filename):
             with open(filename, "r") as file:
-                self.read_table(file)
+                self.read_table(name, file)
         
         self.files[name] = filename
     
-    def read_table(self, file):
+    def read_table(self, table_name, file):
         """Read a whoe table contained in a file.
         
         This file is supposed to be formatted as a YAML file.  Furthermore,
@@ -120,6 +121,18 @@ class YAMLConnector(DataConnector):
         object.
         
         """
+        name = table_name
         content = file.read()
         datas = yaml.load(content)
-        # ...
+        if not isinstance(datas, list):
+            raise exceptions.DataFormattingError(
+                    "the file {} must contain a YAML formatted list".format(
+                    self.files[name]))
+        
+        class_table = self.tables[name]
+        objects = []
+        for line in datas:
+            object = class_table(**line)
+            objects.append(object)
+        
+        self.objects_tree[name] = object

@@ -40,7 +40,7 @@ class BaseType:
     
     Each created field has a 'nid' attribute, which represent its identifier
     different from all other types, no matter the field type or the model
-    in which it is defined.  This identifier is used to order thefields
+    in which it is defined.  This identifier is used to order the fields
     for an object.
     
     """

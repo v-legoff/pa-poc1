@@ -26,41 +26,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the MetaModel metaclass."""
+"""This module contains different useful functions for manipulating models.
 
-from model.functions import *
+Functions defined here:
+    get_fields(class) -- return the class's field
+    get_name(class) -- return the model's name
 
-class MetaModel(type):
-    
-    """The model's metaclass.
-    
-    Its job is to set the field list right.  The most important things are:
-    -   Check that every field inherited from another class is copied
-    -   Check that the field NIDs are properly set.
-    
-    """
-    
-    def __init__(cls, name, parents, attributes):
-        type.__init__(cls, name, parents, attributes)
-        fields = get_fields(cls)
-        clean_fields = []
-        for field in fields:
-            if field not in attributes.values():
-                # The field is obviously defined in a parent class
-                copied = field.copy()
-                # We can count on the field_name attribute whic has been set
-                # previously
-                name = field.field_name
-                setattr(cls, name, copied)
-                field = copied
-            else:
-                name = [name for name, attr in attributes.items() if attr is \
-                        field][0]
-            field.field_name = name
-            clean_fields.append(field)
-        
-        # We set the NIDs
-        nids = sorted(field.nid for field in clean_fields)
-        for i, nid in enumerate(nids):
-            field = clean_fields[i]
-            field.nid = nid
+"""
+
+from model.types import BaseType
+
+def get_fields(model):
+    """Return a list of the defined fields in this model."""
+    fields = [getattr(model, name) for name in dir(model)]
+    fields = [field for field in fields if isinstance(field, BaseType)]
+    fields = sorted(fields, key=lambda field: field.nid)
+    return fields
+
+def get_name(model):
+    """Return the model name."""
+    name = model.__name__
+    name = name.split(".")[-1]
+    return name.lower()
