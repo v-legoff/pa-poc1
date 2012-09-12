@@ -46,13 +46,24 @@ class DataConnector:
     
     """
     
-    def __init__(self, config):
-        """Initialize the data connector.
+    def __init__(self):
+        """Initialize the data connector."""
+        self.objects_tree = {}
+        self.tables = {}
+    
+    def record_tables(classes):
+        """Record the given classes.
         
-        The config is a dictionary describing the needed
-        configuration for this data connector.  The needed
-        configuration must be described in a YML file in the same
-        directory as the data connector.
+        The parameter must be a list of classes. Each class must
+        be a model.
         
         """
-        raise NotImplementedError()
+        for model in classes:
+            self.record_model(model)
+    
+    def record_model(self, model):
+        """Record the given model, a subclass of model.Model."""
+        name = model.model_name()
+        self.tables[name] = model
+        self.objects_tree[name] = []
+    
