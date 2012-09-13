@@ -53,10 +53,11 @@ class BaseType:
         BaseType.current_nid += 1
         return nid
     
-    def __init__(self):
+    def __init__(self, pkey=False):
         """The basetype field constructor."""
         self.nid = self.next_nid()
         self.field_name = "unknown name"
+        self.pkey = pkey
     
     def __repr__(self):
         return "<field {} ({})>".format(repr(self.field_name), self.nid)
@@ -76,5 +77,5 @@ class Integer(BaseType):
     
     """
     
-    def __init__(self, key=False):
-        BaseType.__init__(self)
+    def __init__(self, pkey=False):
+        BaseType.__init__(self, pkey)

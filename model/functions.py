@@ -31,6 +31,8 @@
 Functions defined here:
     get_fields(class) -- return the class's field
     get_name(class) -- return the model's name
+    get_pkey_names -- return a list of primary key fields name
+    get_pkey_values -- return a list of primary key fields values
 
 """
 
@@ -48,3 +50,22 @@ def get_name(model):
     name = model.__name__
     name = name.split(".")[-1]
     return name.lower()
+
+def get_pkey_names(model):
+    """Return a list of field names (those defined as primary key)."""
+    fields = get_fields(model)
+    p_fields = [field.field_name for field in fields if field.pkey]
+    return p_fields
+
+def get_pkey_values(object):
+    """Return a list of datas (those defined as primary key).
+    
+    NOTE: the 'get_fields_name' function expects a model as argument
+    (a class).  This function, however, expects an object created on a
+    Model class.
+    
+    """
+    fields = get_fields(type(object))
+    p_fields = [field.field_name for field in fields if field.pkey]
+    p_fields = [getattr(object, field) for field in p_fields]
+    return p_fields

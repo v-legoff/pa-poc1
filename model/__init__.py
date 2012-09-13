@@ -68,7 +68,7 @@ class Model(metaclass=MetaModel):
     
     """
     
-    id = Integer(key=True)
+    id = Integer(pkey=True)
     
     def __init__(self, **kwargs):
         """Create an object from keyword parameters.
@@ -82,4 +82,7 @@ class Model(metaclass=MetaModel):
             setattr(self, name, value)
     
     def __repr__(self):
-        return "<model {}>".format(get_name(type(self)))
+        pkeys = get_pkey_values(self)
+        pkeys = [repr(field) for field in pkeys]
+        pkeys = " ".join(pkeys)
+        return "<model {} ({})>".format(get_name(type(self)), pkeys)
