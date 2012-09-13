@@ -135,4 +135,4 @@ class YAMLConnector(DataConnector):
             object = class_table(**line)
             objects.append(object)
         
-        self.objects_tree[name] = object
+        self.objects_tree[name] = objects
