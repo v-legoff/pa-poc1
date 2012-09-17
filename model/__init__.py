@@ -86,3 +86,16 @@ class Model(metaclass=MetaModel):
         pkeys = [repr(field) for field in pkeys]
         pkeys = " ".join(pkeys)
         return "<model {} ({})>".format(get_name(type(self)), pkeys)
+    
+    def __setattr__(self, attr, value):
+        """Set the value to the field.
+        
+        This method checks the value type as well.
+        
+        """
+        field = getattr(self, attr)
+        if isinstance(field, BaseType):
+            # Check the value type
+            check = field.accept_value(value)
+        
+        object.__setattr__(self, attr, value)

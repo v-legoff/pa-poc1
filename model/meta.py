@@ -64,3 +64,8 @@ class MetaModel(type):
         for i, nid in enumerate(nids):
             field = clean_fields[i]
             field.nid = nid
+            field.model = cls
+    
+    def __repr__(self):
+        """Return the model's name."""
+        return get_name(self)

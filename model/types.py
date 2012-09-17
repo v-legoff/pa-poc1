@@ -56,6 +56,7 @@ class BaseType:
     def __init__(self, pkey=False):
         """The basetype field constructor."""
         self.nid = self.next_nid()
+        self.model = None
         self.field_name = "unknown name"
         self.pkey = pkey
     
@@ -67,6 +68,17 @@ class BaseType:
         copied = copy.copy(self)
         copied.nid = self.next_nid()
         return copied
+    
+    def accept_value(self, value):
+        """Return wether this field type accept the specified value.
+        
+        For instance, a string field type will accept str Python type.
+        
+        Raise a ValueError if the value is not supported.
+        
+        """
+        raise ValueError("invalid value {} for {}.{}".format(repr(value),
+                repr(self.model), self.field_name))
 
 class Integer(BaseType):
     
@@ -79,3 +91,36 @@ class Integer(BaseType):
     
     def __init__(self, pkey=False):
         BaseType.__init__(self, pkey)
+    
+    def accept_value(self, value):
+        """Return True if this value is accepted.
+        
+        Raise a ValueError otherwise.
+        
+        """
+        if not isinstance(value, int):
+            BaseType.accept_value(self, value)
+        
+        return True
+
+class String(BaseType):
+    
+    """Field type: string.
+    
+    This type of field handles a string of characters of different length.
+    
+    """
+    
+    def __init__(self):
+        BaseType.__init__(self, pkey=False)
+    
+    def accept_value(self, value):
+        """Return True if this value is accepted.
+        
+        Raise a ValueError otherwise.
+        
+        """
+        if not isinstance(value, str):
+            BaseType.accept_value(self, value)
+        
+        return True

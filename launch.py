@@ -40,7 +40,7 @@ class User(Model):
     
     """A user model."""
     
-    username = Integer() #  WHAT?
+    username = String()
     
     def __repr__(self):
         return "<user id={}, username={}>".format(self.id, repr(self.username))
