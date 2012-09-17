@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package defining the data connector for YAML.
+"""Package defining the data connector for sqlite3.
 
 The data connector (subclass of DataConnector) is described in
 this file.
@@ -38,7 +38,7 @@ import os
 driver = True
 
 try:
-    import yaml
+    import sqlite3
 except ImportError:
     driver = False
 
@@ -46,18 +46,12 @@ from dc.connector import DataConnector
 from dc import exceptions
 from model.functions import *
 
-class YAMLConnector(DataConnector):
+class Sqlite3Connector(DataConnector):
     
-    """Data connector for YAML.
+    """Data connector for sqlite3.
     
-    This data connector should read and write datas in YML format, using
-    the yaml library.
-    
-    A very short example:
-        # Table: users
-        - id: 1
-          username: admin
-          email_address: admin@python-aboard.org
+    This data connector should read and write datas using the sqlite3
+    module (part of the python standard library).
     
     """
     
@@ -69,7 +63,7 @@ class YAMLConnector(DataConnector):
         """
         if not driver:
             raise exceptions.DriverNotFound(
-                    "the yaml library can not be found")
+                    "the sqlite3 library can not be found")
         
         self.location = None
     
@@ -78,7 +72,7 @@ class YAMLConnector(DataConnector):
         if location is None:
             raise exceptions.InsufficientConfiguration(
                     "the location for storing datas was not specified for " \
-                    "the YAML data connector")
+                    "the sqlite3 data connector")
         
         location = location.replace("\\", "/")
         if location.startswith("~"):
@@ -100,43 +94,4 @@ class YAMLConnector(DataConnector):
         
         DataConnector.__init__(self)
         self.location = location
-        self.files = {}
-    
-    def record_model(self, model):
-        """Record the given model."""
-        name = DataConnector.record_model(self, model)
-        filename = self.location + "/" + name + ".yml"
-        if os.path.exists(filename):
-            with open(filename, "r") as file:
-                self.read_table(name, file)
-        
-        self.files[name] = filename
-    
-    def read_table(self, table_name, file):
-        """Read a whoe table contained in a file.
-        
-        This file is supposed to be formatted as a YAML file.  Furthermore,
-        the 'yaml.load' function should return a list of dictionaries.
-        Each dictionary is a line of data which sould describe a model
-        object.
-        
-        """
-        name = table_name
-        content = file.read()
-        datas = yaml.load(content)
-        if not isinstance(datas, list):
-            raise exceptions.DataFormattingError(
-                    "the file {} must contain a YAML formatted list".format(
-                    self.files[name]))
-        
-        class_table = self.tables[name]
-        objects = {}
-        for line in datas:
-            object = class_table(**line)
-            pkey = get_pkey_values(object)
-            if len(pkey) == 1:
-                pkey = pkey[0]
-            
-            objects[pkey] = object
-        
-        self.objects_tree[name] = objects
+        self.connection = sqlite3.connect(self.location)

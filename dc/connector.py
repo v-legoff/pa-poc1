@@ -52,6 +52,7 @@ class DataConnector:
         """Initialize the data connector."""
         self.objects_tree = {}
         self.tables = {}
+        self.to_update = set()
     
     def record_tables(self, classes):
         """Record the given classes.
@@ -62,6 +63,8 @@ class DataConnector:
         """
         for model in classes:
             self.record_model(model)
+        
+        self.to_update = set()
     
     def record_model(self, model):
         """Record the given model, a subclass of model.Model."""

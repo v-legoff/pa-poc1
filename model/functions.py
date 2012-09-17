@@ -58,7 +58,7 @@ def get_pkey_names(model):
     return p_fields
 
 def get_pkey_values(object):
-    """Return a list of datas (those defined as primary key).
+    """Return a tuple of datas (those defined as primary key).
     
     NOTE: the 'get_fields_name' function expects a model as argument
     (a class).  This function, however, expects an object created on a
@@ -68,4 +68,4 @@ def get_pkey_values(object):
     fields = get_fields(type(object))
     p_fields = [field.field_name for field in fields if field.pkey]
     p_fields = [getattr(object, field) for field in p_fields]
-    return p_fields
+    return tuple(p_fields)
