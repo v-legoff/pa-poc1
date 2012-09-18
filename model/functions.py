@@ -31,6 +31,7 @@
 Functions defined here:
     get_fields(class) -- return the class's field
     get_name(class) -- return the model's name
+    get_plural_name(class) -- return the plural class name
     get_pkey_names -- return a list of primary key fields name
     get_pkey_values -- return a list of primary key fields values
 
@@ -50,6 +51,27 @@ def get_name(model):
     name = model.__name__
     name = name.split(".")[-1]
     return name.lower()
+
+def get_plural_name(model):
+    """Return the plural model's name.
+    
+    The plural name is:
+        The value of the 'plural_name' class attribute if exists
+        The singular name extended with the 's / es' rule
+    
+    """
+    if hasattr(model, "plural_name"):
+        return model.plural_name
+    else:
+        singular_name = get_name(model)
+        if singular_name.endswith("y"):
+            singular_name = singular_name[:-1] + "ies"
+        elif singular_name.endswith("s"):
+            singular_name += "es"
+        else:
+            singular_name += "s"
+        
+        return singular_name
 
 def get_pkey_names(model):
     """Return a list of field names (those defined as primary key)."""

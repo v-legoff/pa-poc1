@@ -35,6 +35,13 @@ this file.
 
 import os
 
+from model.types import *
+
+SQLITE_TYPES = {
+    Integer: "integer",
+    String: "text",
+}
+
 driver = True
 
 try:
@@ -66,6 +73,7 @@ class Sqlite3Connector(DataConnector):
                     "the sqlite3 library can not be found")
         
         self.location = None
+        self.created_tables = ()
     
     def setup(self, location=None):
         """Setup the data connector."""
@@ -78,20 +86,33 @@ class Sqlite3Connector(DataConnector):
         if location.startswith("~"):
             location = os.path.expanduser("~") + location[1:]
         
-        if location.endswith("/"):
-            location = location[:-1]
-        
-        if not os.path.exists(location):
-            # Try to create it
-            os.makedirs(location)
-        
-        if not os.access(location, os.R_OK):
-            raise exceptions.DriverInitializationError(
-                    "cannot read in {}".format(location))
-        if not os.access(location, os.W_OK):
-            raise exceptions.DriverInitializationError(
-                    "cannot write in {}".format(location))
-        
         DataConnector.__init__(self)
         self.location = location
         self.connection = sqlite3.connect(self.location)
+    
+    def record_tables(self, classes):
+        """Record the tables."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT name FROM sqlite_master")
+        self.created_tables = tuple(cursor.fetchall())
+        DataConnector.record_tables(self, classes)
+        self.connection.commit()
+    
+    def record_model(self, model):
+        """Record a single model."""
+        name = get_plural_name(model)
+        if name not in self.created_tables:
+            self.create_table(name, model)
+    
+    def create_table(self, name, model):
+        """Create the sqlite table related to the specified model."""
+        fields = get_fields(model)
+        sql_fields = []
+        for field in fields:
+            sql_field = SQLITE_TYPES[type(field)]
+            sql_fields.append(field.field_name + " " + sql_field)
+        
+        query = "CREATE TABLE {} ({})".format(name, ", ".join(sql_fields))
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
