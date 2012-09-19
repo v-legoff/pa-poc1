@@ -70,5 +70,13 @@ class DataConnector:
         """Record the given model, a subclass of model.Model."""
         name = get_name(model)
         self.tables[name] = model
-        self.objects_tree[name] = []
+        self.objects_tree[name] = {}
         return name
+    
+    def find(model, pkey_values):
+        """Return, if found, the selected object.
+        
+        Raise a model.exceptions.ObjectNotFound if not found.
+        
+        """
+        raise NotImplementedError

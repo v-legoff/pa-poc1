@@ -47,6 +47,7 @@ class User(Model):
 
 # Load the stored datas
 connector = Sqlite3Connector()
+Model.data_connector = connector
 connector.setup("data.db")
 connector.record_tables([User])
-print(connector.objects_tree)
+print(User.find(1))

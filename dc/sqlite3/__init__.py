@@ -93,13 +93,15 @@ class Sqlite3Connector(DataConnector):
     def record_tables(self, classes):
         """Record the tables."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT name FROM sqlite_master")
-        self.created_tables = tuple(cursor.fetchall())
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = [row[0] for row in cursor.fetchall()]
+        self.created_tables = tuple(tables)
         DataConnector.record_tables(self, classes)
         self.connection.commit()
     
     def record_model(self, model):
         """Record a single model."""
+        DataConnector.record_model(self, model)
         name = get_plural_name(model)
         if name not in self.created_tables:
             self.create_table(name, model)
@@ -116,3 +118,38 @@ class Sqlite3Connector(DataConnector):
 
         cursor = self.connection.cursor()
         cursor.execute(query)
+    
+    def find(self, model, pkey_values):
+        """Return, if found, the specified object."""
+        # First, look for the object in the cached tree
+        pkey_values_list = list(pkey_values.values())
+        table_name = get_name(model)
+        cached_tree = self.objects_tree.get(table_name, {})
+        object = cached_tree.get(*pkey_values_list)
+        if object:
+            return object
+        
+        query = "SELECT * FROM {} WHERE ".format(get_plural_name(model))
+        params = []
+        filters = []
+        for name, value in pkey_values.items():
+            filters.append("{}=?".format(name))
+            params.append(value)
+        
+        query += " AND ".join(filters)
+        cursor = self.connection.cursor()
+        cursor.execute(query, tuple(params))
+        row = cursor.fetchone()
+        if row is None:
+            raise ValueError("not found")
+        
+        dict_fields = {}
+        for i, field in enumerate(get_fields(model)):
+            dict_fields[field.field_name] = row[i]
+        
+        object = model(**dict_fields)
+        pkey = get_pkey_values(object)
+        if len(pkey) == 1:
+            pkey = pkey[0]
+        self.objects_tree[table_name][pkey] = object
+        return object
