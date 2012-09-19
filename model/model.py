@@ -75,13 +75,13 @@ class Model(metaclass=MetaModel):
         The created object WILL NOT be saved through the data connector.
         
         """
-        object = cls()
+        new_object = cls()
         fields = get_fields(cls)
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
-            setattr(object, name, value)
+            object.__setattr__(new_object, name, value)
         
-        return object
+        return new_object
     
     @classmethod
     def get_all(cls):
@@ -148,7 +148,7 @@ class Model(metaclass=MetaModel):
         fields = get_fields(type(self))
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
-            setattr(self, name, value)
+            object.__setattr__(self, name, value)
         
         # If named parameters were specified, save the object
         if kwargs and Model.data_connector:
@@ -172,3 +172,16 @@ class Model(metaclass=MetaModel):
             check = field.accept_value(value)
         
         object.__setattr__(self, attr, value)
+        
+        if Model.data_connector and Model.data_connector.running:
+            Model.data_connector.update(self, attr)
+    
+    def __dell__(self):
+        """Destroy the created object.
+        
+        BEWARE: if the data connector is still up, the object will
+        be erased from the database.
+        
+        """
+        if Model.data_connector:
+            Model.data_connector.delete(self)

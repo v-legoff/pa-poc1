@@ -50,10 +50,17 @@ connector = Sqlite3Connector()
 Model.data_connector = connector
 connector.setup("data.db")
 connector.record_tables([User])
-names = ("Kredh", "Nitrate", "I don't have a clue", "When I'll get older")
-users = []
+names = ("Kredh", "Nitrate", "I don't have a clue", "When I'll get older",
+        "green mouse", "to destroy")
 for name in names:
-    users.append(User(username=name))
+    User(username=name)
 
+user = User.find(4)
+user.username = "I will be stronger"
+destroy = User.find(6)
+del destroy
 connector.connection.commit()
 print(User.get_all())
+
+# Before closing the program, we must stop the data connector
+Model.data_connector = None

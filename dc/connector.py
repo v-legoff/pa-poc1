@@ -50,6 +50,7 @@ class DataConnector:
     
     def __init__(self):
         """Initialize the data connector."""
+        self.running = False
         self.objects_tree = {}
         self.tables = {}
         self.to_update = set()
@@ -65,6 +66,7 @@ class DataConnector:
             self.record_model(model)
         
         self.to_update = set()
+        self.running = True
     
     def record_model(self, model):
         """Record the given model, a subclass of model.Model."""
@@ -93,4 +95,8 @@ class DataConnector:
     
     def get_all(self, model):
         """Return all the model's object in a list."""
+        raise NotImplementedError
+    
+    def update(self, object, attribute):
+        """Update an object."""
         raise NotImplementedError

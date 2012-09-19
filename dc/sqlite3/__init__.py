@@ -222,3 +222,27 @@ class Sqlite3Connector(DataConnector):
             objects.append(object)
         
         return objects
+    
+    def update(self, object, attribute):
+        """Update an object."""
+        plural_name = get_plural_name(type(object))
+        keys = get_pkey_names(type(object))
+        params = [getattr(object, attribute)] + list(get_pkey_values(object))
+        names = [name + "=?" for name in keys]
+        query = "UPDATE " + plural_name + " SET " + attribute + "=?"
+        query += " WHERE " + " AND ".join(names)
+        cursor = self.connection.cursor()
+        cursor.execute(query, tuple(params))
+    
+    def delete(self, object):
+        """Delete the object."""
+        name = get_name(type(object))
+        plural_name = get_plural_name(type(object))
+        keys = get_pkey_names(type(object))
+        values = tuple(get_pkey_values(object))
+        params = [getattr(object, attribute)] + list(values)
+        names = [name + "=?" for name in keys]
+        query = "DELETE FROM " + plural_name
+        query += " WHERE " + " AND ".join(names)
+        cursor = self.connection.cursor()
+        cursor.execute(query, tuple(params))
