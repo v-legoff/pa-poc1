@@ -240,9 +240,16 @@ class Sqlite3Connector(DataConnector):
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         values = tuple(get_pkey_values(object))
-        params = [getattr(object, attribute)] + list(values)
         names = [name + "=?" for name in keys]
         query = "DELETE FROM " + plural_name
         query += " WHERE " + " AND ".join(names)
         cursor = self.connection.cursor()
-        cursor.execute(query, tuple(params))
+        cursor.execute(query, tuple(values))
+        
+        # Delete from cache
+        if len(values) == 1:
+            values = values[0]
+        
+        cache = self.objects_tree.get(name, {})
+        if values in cache.keys():
+            del cache[values]

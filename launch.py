@@ -57,8 +57,7 @@ for name in names:
 
 user = User.find(4)
 user.username = "I will be stronger"
-destroy = User.find(6)
-del destroy
+User.find(6).delete()
 connector.connection.commit()
 print(User.get_all())
 

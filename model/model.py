@@ -176,7 +176,7 @@ class Model(metaclass=MetaModel):
         if Model.data_connector and Model.data_connector.running:
             Model.data_connector.update(self, attr)
     
-    def __dell__(self):
+    def delete(self):
         """Destroy the created object.
         
         BEWARE: if the data connector is still up, the object will
