@@ -132,7 +132,7 @@ class YAMLConnector(DataConnector):
         class_table = self.tables[name]
         objects = {}
         for line in datas:
-            object = class_table(**line)
+            object = class_table.build(**line)
             pkey = get_pkey_values(object)
             if len(pkey) == 1:
                 pkey = pkey[0]

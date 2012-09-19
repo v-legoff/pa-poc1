@@ -147,9 +147,61 @@ class Sqlite3Connector(DataConnector):
         for i, field in enumerate(get_fields(model)):
             dict_fields[field.field_name] = row[i]
         
-        object = model(**dict_fields)
+        object = model.build(**dict_fields)
         pkey = get_pkey_values(object)
         if len(pkey) == 1:
             pkey = pkey[0]
         self.objects_tree[table_name][pkey] = object
         return object
+    
+    def register_object(self, object):
+        """Save the object, issued from a model."""
+        name = get_name(type(object))
+        fields = get_fields(type(object))
+        plural_name = get_plural_name(type(object))
+        query = "INSERT INTO " + plural_name + " ("
+        names = []
+        values = []
+        for field in fields:
+            names.append(field.field_name)
+            values.append(getattr(object, field.field_name))
+        
+        query += ", ".join(names) + ") values("
+        query += ", ".join("?" * len(values)) + ")"
+        cursor = self.connection.cursor()
+        cursor.execute(query, tuple(values))
+    
+    def get_all(self, model):
+        """Return all the model's objects in a list."""
+        name = get_name(model)
+        plural_name = get_plural_name(model)
+        fields = get_fields(model)
+        pkey_names = get_pkey_names(model)
+        def get_from_cache(cache, names, object):
+            values = tuple(object.get(name) for name in names)
+            if len(values) == 1:
+                values = values[0]
+            
+            return cache.get(values)
+        
+        cache = self.objects_tree.get(plural_name, {})
+        objects = []
+        query = "SELECT * FROM " + plural_name
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        for row in cursor.fetchall():
+            dict_fields = {}
+            for i, field in enumerate(fields):
+                dict_fields[field.field_name] = row[i]
+            
+            object = get_from_cache(cache, pkey_names, dict_fields)
+            if object is None:
+                object = model.build(**dict_fields)
+                pkey = get_pkey_values(object)
+                if len(pkey) == 1:
+                    pkey = pkey[0]
+                
+                cache[pkey] = object
+            objects.append(object)
+        
+        return objects

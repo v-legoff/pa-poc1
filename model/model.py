@@ -57,11 +57,10 @@ class Model(metaclass=MetaModel):
     >>> get_fields(User)
     ... [<field 'username'>, <field 'password'>, <field 'creation_date'>]
     
-    Methods defined (which can be redefined):
-        create() -- create a new object
-        save() -- save the object through the data connector
-        delete() -- delete the object
-        find(identifier) -- get an object through its ID
+    Class methods:
+        build(**attributes) -- create (but don't save) a new object
+        get_all() -- return all model's objects
+        find(identifiers) -- get an object through its identifiers
         filter(...) -- retrieve one or more object
     
     """
@@ -69,6 +68,29 @@ class Model(metaclass=MetaModel):
     id = Integer(pkey=True)
     
     # Class methods
+    @classmethod
+    def build(cls, **kwargs):
+        """Create and return an object.
+        
+        The created object WILL NOT be saved through the data connector.
+        
+        """
+        object = cls()
+        fields = get_fields(cls)
+        fields = dict((field.field_name, field) for field in fields)
+        for name, value in kwargs.items():
+            setattr(object, name, value)
+        
+        return object
+    
+    @classmethod
+    def get_all(cls):
+        """Return the full list of model's objects."""
+        if Model.data_connector:
+            return Model.data_connector.get_all(cls)
+        
+        return []
+    
     @classmethod
     def find(cls, pkey=None, **kwargs):
         """Find and return (if found) an object.
@@ -127,6 +149,10 @@ class Model(metaclass=MetaModel):
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
             setattr(self, name, value)
+        
+        # If named parameters were specified, save the object
+        if kwargs and Model.data_connector:
+            Model.data_connector.register_object(self)
     
     def __repr__(self):
         pkeys = get_pkey_values(self)

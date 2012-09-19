@@ -50,4 +50,10 @@ connector = Sqlite3Connector()
 Model.data_connector = connector
 connector.setup("data.db")
 connector.record_tables([User])
-print(User.find(1))
+names = ("Kredh", "Nitrate", "I don't have a clue", "When I'll get older")
+users = []
+for i, name in enumerate(names):
+    users.append(User(id=i + 1, username=name))
+
+connector.connection.commit()
+print(User.get_all())

@@ -80,3 +80,17 @@ class DataConnector:
         
         """
         raise NotImplementedError
+    
+    def register_object(self, object):
+        """Save the object, issued from a model.
+        
+        Usually this method should:
+        -   Save the object (in a database, for instance)
+        -   Cache the object.
+        
+        """
+        raise NotImplementedError
+    
+    def get_all(self, model):
+        """Return all the model's object in a list."""
+        raise NotImplementedError
