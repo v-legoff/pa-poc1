@@ -52,8 +52,8 @@ connector.setup("data.db")
 connector.record_tables([User])
 names = ("Kredh", "Nitrate", "I don't have a clue", "When I'll get older")
 users = []
-for i, name in enumerate(names):
-    users.append(User(id=i + 1, username=name))
+for name in names:
+    users.append(User(username=name))
 
 connector.connection.commit()
 print(User.get_all())

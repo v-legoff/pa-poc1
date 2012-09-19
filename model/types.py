@@ -59,6 +59,7 @@ class BaseType:
         self.model = None
         self.field_name = "unknown name"
         self.pkey = pkey
+        self.auto_increment = False
     
     def __repr__(self):
         return "<field {} ({})>".format(repr(self.field_name), self.nid)
@@ -89,8 +90,9 @@ class Integer(BaseType):
     
     """
     
-    def __init__(self, pkey=False):
+    def __init__(self, pkey=False, auto_increment=False):
         BaseType.__init__(self, pkey)
+        self.auto_increment = auto_increment
     
     def accept_value(self, value):
         """Return True if this value is accepted.

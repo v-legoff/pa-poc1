@@ -112,7 +112,12 @@ class Sqlite3Connector(DataConnector):
         sql_fields = []
         for field in fields:
             sql_field = SQLITE_TYPES[type(field)]
-            sql_fields.append(field.field_name + " " + sql_field)
+            instruction = field.field_name + " " + sql_field
+            if field.pkey:
+                instruction += " PRIMARY KEY"
+            if field.auto_increment:
+                instruction += " AUTOINCREMENT"
+            sql_fields.append(instruction)
         
         query = "CREATE TABLE {} ({})".format(name, ", ".join(sql_fields))
 
@@ -162,7 +167,12 @@ class Sqlite3Connector(DataConnector):
         query = "INSERT INTO " + plural_name + " ("
         names = []
         values = []
+        auto_increments = []
         for field in fields:
+            if field.auto_increment:
+                auto_increments.append(field.field_name)
+                continue
+            
             names.append(field.field_name)
             values.append(getattr(object, field.field_name))
         
@@ -170,6 +180,13 @@ class Sqlite3Connector(DataConnector):
         query += ", ".join("?" * len(values)) + ")"
         cursor = self.connection.cursor()
         cursor.execute(query, tuple(values))
+        
+        for field in auto_increments:
+            query = "SELECT max(" + field + ") FROM " + plural_name
+            cursor.execute(query)
+            row = cursor.fetchone()
+            value = row[0]
+            setattr(object, field, value)
     
     def get_all(self, model):
         """Return all the model's objects in a list."""

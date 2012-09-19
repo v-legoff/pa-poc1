@@ -65,7 +65,7 @@ class Model(metaclass=MetaModel):
     
     """
     
-    id = Integer(pkey=True)
+    id = Integer(pkey=True, auto_increment=True)
     
     # Class methods
     @classmethod
