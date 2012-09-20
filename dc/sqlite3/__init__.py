@@ -124,6 +124,10 @@ class Sqlite3Connector(DataConnector):
         cursor = self.connection.cursor()
         cursor.execute(query)
     
+    def loop(self):
+        """Commit the database."""
+        self.connection.commit()
+    
     def find(self, model, pkey_values):
         """Return, if found, the specified object."""
         # First, look for the object in the cached tree

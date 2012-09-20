@@ -74,6 +74,10 @@ class DataConnector:
         self.objects_tree[name] = {}
         return name
     
+    def loop(self):
+        """Record some datas or commit some changes if necessary."""
+        pass
+    
     def find(model, pkey_values):
         """Return, if found, the selected object.
         

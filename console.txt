@@ -1,0 +1,17 @@
+Here's an example of a console session.  You can execute this code in
+the provided console (execute launch.py).
+
+>>> User.get_all()
+[]
+>>> me = User(username="Kredh")
+>>> me
+<user id=1, username='Kredh'>
+>>> User.get_all()
+[<user id=1, username='Kredh'>]
+>>> me.username = "vincent-lg"
+>>> User.get_all()
+[<user id=1, username='vincent-lg'>]
+>>> me.delete()
+>>> User.get_all()
+[]
+>>> 
