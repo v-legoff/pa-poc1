@@ -35,6 +35,7 @@ and the user.yml file, included in the repository.
 
 from model import *
 from dc.sqlite3 import Sqlite3Connector
+from tools.console import Console
 
 class User(Model):
     
@@ -50,17 +51,5 @@ connector = Sqlite3Connector()
 Model.data_connector = connector
 connector.setup("data.db")
 connector.record_tables([User])
-names = ("Kredh", "Nitrate", "I don't have a clue", "When I'll get older",
-        "green mouse", "to destroy")
-for name in names:
-    User(username=name)
-
-user = User.find(4)
-user.username = "I will be stronger"
-u = User.find(6)
-u.delete()
-connector.connection.commit()
-print(User.get_all())
-
-# Before closing the program, we must stop the data connector
-Model.data_connector = None
+console = Console({"Model": Model, "User": User})
+console.launch()
