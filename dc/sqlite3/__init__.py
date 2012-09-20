@@ -153,10 +153,7 @@ class Sqlite3Connector(DataConnector):
             dict_fields[field.field_name] = row[i]
         
         object = model.build(**dict_fields)
-        pkey = get_pkey_values(object)
-        if len(pkey) == 1:
-            pkey = pkey[0]
-        self.objects_tree[table_name][pkey] = object
+        self.cache_object(object)
         return object
     
     def register_object(self, object):
@@ -187,21 +184,14 @@ class Sqlite3Connector(DataConnector):
             row = cursor.fetchone()
             value = row[0]
             setattr(object, field, value)
+        
+        self.cache_object(object)
     
     def get_all(self, model):
         """Return all the model's objects in a list."""
         name = get_name(model)
         plural_name = get_plural_name(model)
         fields = get_fields(model)
-        pkey_names = get_pkey_names(model)
-        def get_from_cache(cache, names, object):
-            values = tuple(object.get(name) for name in names)
-            if len(values) == 1:
-                values = values[0]
-            
-            return cache.get(values)
-        
-        cache = self.objects_tree.get(plural_name, {})
         objects = []
         query = "SELECT * FROM " + plural_name
         cursor = self.connection.cursor()
@@ -211,20 +201,20 @@ class Sqlite3Connector(DataConnector):
             for i, field in enumerate(fields):
                 dict_fields[field.field_name] = row[i]
             
-            object = get_from_cache(cache, pkey_names, dict_fields)
+            object = self.get_from_cache(model, dict_fields)
             if object is None:
                 object = model.build(**dict_fields)
-                pkey = get_pkey_values(object)
-                if len(pkey) == 1:
-                    pkey = pkey[0]
-                
-                cache[pkey] = object
+                self.cache_object(object)
             objects.append(object)
         
         return objects
     
     def update(self, object, attribute):
         """Update an object."""
+        if self.was_deleted(object):
+            raise ValueError("the object {} was deleted, can't update " \
+                    "it".format(repr(object)))
+        
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)] + list(get_pkey_values(object))
@@ -239,17 +229,12 @@ class Sqlite3Connector(DataConnector):
         name = get_name(type(object))
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
-        values = tuple(get_pkey_values(object))
         names = [name + "=?" for name in keys]
+        values = tuple(get_pkey_values(object))
         query = "DELETE FROM " + plural_name
         query += " WHERE " + " AND ".join(names)
         cursor = self.connection.cursor()
-        cursor.execute(query, tuple(values))
+        cursor.execute(query, values)
         
         # Delete from cache
-        if len(values) == 1:
-            values = values[0]
-        
-        cache = self.objects_tree.get(name, {})
-        if values in cache.keys():
-            del cache[values]
+        self.uncache_object(object)

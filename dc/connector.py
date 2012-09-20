@@ -53,7 +53,7 @@ class DataConnector:
         self.running = False
         self.objects_tree = {}
         self.tables = {}
-        self.to_update = set()
+        self.deleted_objects = []
     
     def record_tables(self, classes):
         """Record the given classes.
@@ -65,7 +65,6 @@ class DataConnector:
         for model in classes:
             self.record_model(model)
         
-        self.to_update = set()
         self.running = True
     
     def record_model(self, model):
@@ -83,6 +82,52 @@ class DataConnector:
         """
         raise NotImplementedError
     
+    def was_deleted(self, object):
+        """Return whether the object was deleted (uncached)."""
+        name = get_name(type(object))
+        values = tuple(get_pkey_values(object))
+        if len(values) == 1:
+            values = values[0]
+        
+        return (name, values) in self.deleted_objects
+    
+    def get_from_cache(self, model, attributes):
+        """Return, if found, the cached object.
+        
+        The expected parameters are:
+            model -- the model (Model subclass)
+            attributes -- a dictionary {name1: value1, ...}
+        
+        """
+        name = get_name(model)
+        pkey_names = get_pkey_names(model)
+        cache = self.objects_tree.get(name, {})
+        values = tuple(attributes.get(name) for name in pkey_names)
+        if len(values) == 1:
+            values = values[0]
+        
+        return cache.get(values)
+    
+    def cache_object(self, object):
+        """Save the object in cache."""
+        pkey = get_pkey_values(object)
+        if len(pkey) == 1:
+            pkey = pkey[0]
+        
+        self.objects_tree[get_name(type(object))][pkey] = object
+    
+    def uncache_object(self, object):
+        """Remove the object from cache."""
+        name = get_name(type(object))
+        values = tuple(get_pkey_values(object))
+        if len(values) == 1:
+            values = values[0]
+        
+        cache = self.objects_tree.get(name, {})
+        if values in cache.keys():
+            del cache[values]
+            self.deleted_objects.append((name, values))
+
     def register_object(self, object):
         """Save the object, issued from a model.
         
