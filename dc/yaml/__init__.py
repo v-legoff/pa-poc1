@@ -72,6 +72,8 @@ class YAMLConnector(DataConnector):
                     "the yaml library can not be found")
         
         self.location = None
+        self.auto_increments = {}
+        self.to_update = set()
     
     def setup(self, location=None):
         """Setup the data connector."""
@@ -117,8 +119,10 @@ class YAMLConnector(DataConnector):
         
         This file is supposed to be formatted as a YAML file.  Furthermore,
         the 'yaml.load' function should return a list of dictionaries.
-        Each dictionary is a line of data which sould describe a model
-        object.
+        
+        The first dictionary describes some table informations, as
+        the status of the autoincrement fields.  Each following dictionary
+        is a line of data which sould describe a model object.
         
         """
         name = table_name
@@ -130,8 +134,16 @@ class YAMLConnector(DataConnector):
                     self.files[name]))
         
         class_table = self.tables[name]
+        class_datas = datas[0]
+        if not isinstance(class_datas, dict):
+            raise exceptions.DataFormattingError(
+                    "the table informations are not stored in a YAML " \
+                    "dictionary in the file {}".format(self.files[name]))
+        
+        self.read_table_header(name, class_datas)
+        
         objects = {}
-        for line in datas:
+        for line in datas[1:]:
             object = class_table.build(**line)
             pkey = get_pkey_values(object)
             if len(pkey) == 1:
@@ -140,3 +152,89 @@ class YAMLConnector(DataConnector):
             objects[pkey] = object
         
         self.objects_tree[name] = objects
+    
+    def read_table_header(self, name, datas):
+        """Read the table header.
+        
+        This header should describe some informations concerning the
+        table (as the autoincrement fields).
+        
+        """
+        auto_increments = datas.get("auto_increments", [])
+        self.auto_increments[name] = auto_increments
+    
+    def loop(self):
+        """Write the YAML tables."""
+        for table in self.to_update:
+            self.write_table(table)
+        
+        self.to_update.clear()
+    
+    def write_table(self, name):
+        """Write the table in a file."""
+        # First, we get the header
+        header = {}
+        if name in self.auto_increments:
+            header["auto_increments"] = self.auto_increments[name]
+        
+        # Next we browse the object
+        objects = []
+        for object in self.objects_tree[name].values():
+            objects.append(object.__dict__)
+        
+        objects.insert(0, header)
+        content = yaml.dump(objects, default_flow_style=False)
+        with open(self.location + "/" + name + ".yml", "w") as file:
+            file.write(content)
+    
+    def find(model, pkey_values):
+        """Return, if found, the selected object.
+        
+        Raise a model.exceptions.ObjectNotFound if not found.
+        
+        """
+        # Look for the object in the cached tree
+        pkey_values_list = list(pkey_values.values())
+        table_name = get_name(model)
+        cached_tree = self.objects_tree.get(table_name, {})
+        object = cached_tree.get(*pkey_values_list)
+        if object:
+            return object
+        
+        raise ValueError("not found")
+    
+    def register_object(self, object):
+        """Save the object, issued from a model."""
+        name = get_name(type(object))
+        fields = get_fields(type(object))
+        auto_increments = self.auto_increments.get(name, {})
+        for field in fields:
+            if not field.auto_increment:
+                continue
+            
+            value = auto_increments.get(field.field_name, 1)
+            setattr(object, field.field_name, value)
+            auto_increments[field.field_name] = value + 1
+        
+        self.cache_object(object)
+        self.auto_increments[name] = auto_increments
+        self.to_update.add(name)
+    
+    def get_all(self, model):
+        """Return all the model's object in a list."""
+        name = get_name(model)
+        return list(self.objects_tree.get(name, {}).values())
+    
+    def update(self, object, attribute):
+        """Update an object."""
+        name = get_name(type(object))
+        if self.was_deleted(object):
+            raise ValueError("the object {} was deleted, can't update " \
+                    "it".format(repr(object)))
+        
+        self.to_update.add(name)
+    
+    def delete(self, object):
+        """Delete the object."""
+        # Delete from cache only
+        self.uncache_object(object)

@@ -34,7 +34,7 @@ and the user.yml file, included in the repository.
 """
 
 from model import *
-from dc.sqlite3 import Sqlite3Connector
+from dc.yaml import YAMLConnector
 from tools.console import Console
 
 class User(Model):
@@ -47,9 +47,9 @@ class User(Model):
         return "<user id={}, username={}>".format(self.id, repr(self.username))
 
 # Load the stored datas
-connector = Sqlite3Connector()
+connector = YAMLConnector()
 Model.data_connector = connector
-connector.setup("data.db")
+connector.setup("datas")
 connector.record_tables([User])
 console = Console({"Model": Model, "User": User})
 console.launch()
