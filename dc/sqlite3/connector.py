@@ -208,7 +208,7 @@ class Sqlite3Connector(DataConnector):
     
     def update(self, object, attribute):
         """Update an object."""
-        DataConnector.update(self, object)
+        DataConnector.update(self, object, attribute)
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)] + list(get_pkey_values(object))
