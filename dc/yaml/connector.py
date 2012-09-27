@@ -182,17 +182,14 @@ class YAMLConnector(DataConnector):
         with open(self.location + "/" + name + ".yml", "w") as file:
             file.write(content)
     
-    def find(model, pkey_values):
+    def find(self, model, pkey_values):
         """Return, if found, the selected object.
         
         Raise a model.exceptions.ObjectNotFound if not found.
         
         """
         # Look for the object in the cached tree
-        pkey_values_list = list(pkey_values.values())
-        table_name = get_name(model)
-        cached_tree = self.objects_tree.get(table_name, {})
-        object = cached_tree.get(*pkey_values_list)
+        object = self.get_from_cache(model, pkey_values)
         if object:
             return object
         
@@ -222,14 +219,13 @@ class YAMLConnector(DataConnector):
     
     def update(self, object, attribute):
         """Update an object."""
+        DataConnector.update(self, object, attribute)
         name = get_name(type(object))
-        if self.was_deleted(object):
-            raise ValueError("the object {} was deleted, can't update " \
-                    "it".format(repr(object)))
-        
         self.to_update.add(name)
     
     def delete(self, object):
         """Delete the object."""
         # Delete from cache only
-        self.uncache_object(object)
+        DataConnector.delete(self, object)
+        name = get_name(type(object))
+        self.to_update.add(name)

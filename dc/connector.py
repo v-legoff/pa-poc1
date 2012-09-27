@@ -78,7 +78,7 @@ class DataConnector:
         """Record some datas or commit some changes if necessary."""
         pass
     
-    def find(model, pkey_values):
+    def find(self, model, pkey_values):
         """Return, if found, the selected object.
         
         Raise a model.exceptions.ObjectNotFound if not found.
@@ -148,4 +148,10 @@ class DataConnector:
     
     def update(self, object, attribute):
         """Update an object."""
-        raise NotImplementedError
+        if self.was_deleted(object):
+            raise ValueError("the object {} was deleted, can't update " \
+                    "it".format(repr(object)))
+    
+    def delete(self, object):
+        """Delete object from cache."""
+        self.uncache_object(object)

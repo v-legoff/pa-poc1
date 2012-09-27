@@ -132,7 +132,7 @@ class Model(metaclass=MetaModel):
                 
                 pkey_values[name] = value
             
-            if len(mkey_values) != len(pkey_names):
+            if len(pkey_values) != len(pkey_names):
                 raise ValueError("not all primary key fields were " \
                         "specified for the model {}, expects {}".format(
                         model_name, ", ".join(repr_pkey_names)))
