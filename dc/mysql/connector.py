@@ -26,11 +26,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package defining the data connector for sqlite3.
+"""Module containing the MySQLConnector class."""
 
-The data connector (subclass of DataConnector) is described in
-the file ./connector.py .
+driver = True
 
-"""
+try:
+    from pymysql import connector
+except ImportError:
+    driver = False
 
-from dc.sqlite3.connector import Sqlite3Connector
+from dc.connector import DataConnector
+from dc import exceptions
+
+class MySQLConnector(DataConnector):
+    
+    """Data connector for MySQL."""
+    
+    def __init__(self):
+        """Check the driver presence.
+        
+        If not found, raise a DriverNotFound exception.
+        
+        """
+        if not driver:
+            raise exceptions.DriverNotFound(
+                    "the mysql driver can not be found")
