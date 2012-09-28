@@ -83,7 +83,10 @@ class AbstractDCTest:
         self.setup_driver()
     
     def tearDown(self):
+        """Destroy the data connector and tear it down."""
+        dc = self.dc
         self.teardown_driver()
+        dc.destroy()
     
     def setup_driver(self):
         """Setup the driver.

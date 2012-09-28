@@ -70,6 +70,12 @@ class YAMLConnector(DataConnector):
         self.auto_increments = {}
         self.to_update = set()
     
+    def destroy(self):
+        """Erase EVERY stored data."""
+        for file in os.listdir(self.location):
+            os.remove(self.location + "/" + file)
+        self.clear_cache()
+        
     def setup(self, location=None):
         """Setup the data connector."""
         if location is None:

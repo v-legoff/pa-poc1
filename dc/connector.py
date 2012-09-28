@@ -55,6 +55,10 @@ class DataConnector:
         self.tables = {}
         self.deleted_objects = []
     
+    def destroy(self):
+        """Destroy and erase EVERY stored data."""
+        raise NotImplementedError
+    
     def record_tables(self, classes):
         """Record the given classes.
         
@@ -131,7 +135,11 @@ class DataConnector:
         if values in cache.keys():
             del cache[values]
             self.deleted_objects.append((name, values))
-
+    
+    def clear_cache(self):
+        """Clear the cache."""
+        self.objects_tree = {}
+    
     def register_object(self, object):
         """Save the object, issued from a model.
         
