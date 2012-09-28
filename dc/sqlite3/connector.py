@@ -81,6 +81,11 @@ class Sqlite3Connector(DataConnector):
         if location.startswith("~"):
             location = os.path.expanduser("~") + location[1:]
         
+        location_dir = os.path.split(location)[0]
+        if location_dir and not os.path.exists(location_dir):
+            # Try to create it
+            os.makedirs(location_dir)
+        
         DataConnector.__init__(self)
         self.location = location
         self.connection = sqlite3.connect(self.location)
