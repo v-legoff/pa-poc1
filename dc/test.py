@@ -69,6 +69,7 @@ class AbstractDCTest:
         test_delete -- try to delete an object
         test_primary_keys -- test that the primary keys are unique
         test_auto_increment -- test the behavior of an autoincrement field
+        test_default -- test the default value of a field
         test_find -- try to a retrieve a single object
         test_get_all -- try to retrieve all the created objects
     
@@ -126,8 +127,9 @@ class AbstractDCTest:
     
     def test_create(self):
         """Create a simple user."""
-        user = User(username="Kredh")
+        user = User(username="Kredh", password="fore123")
         self.assertEqual(user.username, "Kredh")
+        self.assertEqual(user.password, "fore123")
     
     def test_update(self):
         """Create and update a simple user."""
@@ -199,6 +201,11 @@ class AbstractDCTest:
         self.setup_driver()
         still_new_user = User(username="Overall")
         self.assertTrue(new_user.id < still_new_user.id)
+    
+    def test_default(self):
+        """Create a user to test the default value of 'password'."""
+        user = User(username="Delfin")
+        self.assertEqual(user.password, "unknown")
     
     def test_find(self):
         """Create and try to find the created user."""

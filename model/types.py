@@ -53,13 +53,18 @@ class BaseType:
         BaseType.current_nid += 1
         return nid
     
-    def __init__(self, pkey=False):
+    def __init__(self, pkey=False, default=None):
         """The basetype field constructor."""
         self.nid = self.next_nid()
         self.model = None
         self.field_name = "unknown name"
         self.pkey = pkey
         self.auto_increment = False
+        self.default = default
+        
+        if default:
+            # Check that the default value is accepted
+            self.accept_value(default)
     
     def __repr__(self):
         return "<field {} ({})>".format(repr(self.field_name), self.nid)
@@ -90,8 +95,8 @@ class Integer(BaseType):
     
     """
     
-    def __init__(self, pkey=False, auto_increment=False):
-        BaseType.__init__(self, pkey)
+    def __init__(self, pkey=False, auto_increment=False, default=None):
+        BaseType.__init__(self, pkey, default)
         self.auto_increment = auto_increment
     
     def accept_value(self, value):
@@ -113,8 +118,8 @@ class String(BaseType):
     
     """
     
-    def __init__(self):
-        BaseType.__init__(self, pkey=False)
+    def __init__(self, pkey=False, default=None):
+        BaseType.__init__(self, pkey, default)
     
     def accept_value(self, value):
         """Return True if this value is accepted.

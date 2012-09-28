@@ -33,6 +33,7 @@ class User(Model):
     """A user model."""
     
     username = String()
+    password = String(default="unknown")
     
     def __repr__(self):
         return "<user id={}, username={}>".format(self.id, repr(self.username))

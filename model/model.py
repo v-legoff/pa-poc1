@@ -150,6 +150,18 @@ class Model(metaclass=MetaModel):
         for name, value in kwargs.items():
             object.__setattr__(self, name, value)
         
+        # Get the default values
+        if kwargs:
+            for name, field in fields.items():
+                if not field.auto_increment and not name in kwargs:
+                    default = field.default
+                    if default is None:
+                        raise ValueError("the field {} of model {} has no " \
+                                "default value".format(field.field_name,
+                                type(self)))
+                    
+                    object.__setattr__(self, name, default)
+        
         # If named parameters were specified, save the object
         if kwargs and Model.data_connector:
             Model.data_connector.register_object(self)
