@@ -55,6 +55,10 @@ class DataConnector:
         self.tables = {}
         self.deleted_objects = []
     
+    def close(self):
+        """Close the data connector (the database connection for instance)."""
+        raise NotImplementedError
+    
     def destroy(self):
         """Destroy and erase EVERY stored data."""
         raise NotImplementedError

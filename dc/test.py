@@ -69,6 +69,7 @@ class AbstractDCTest:
         test_delete -- try to delete an object
         test_primary_keys -- test that the primary keys are unique
         test_auto_increment -- test the behavior of an autoincrement field
+        test_auto_increment_delete -- check that old keys are not re-used
         test_default -- test the default value of a field
         test_find -- try to a retrieve a single object
         test_get_all -- try to retrieve all the created objects
@@ -122,6 +123,7 @@ class AbstractDCTest:
     def teardown_driver(self):
         """Tear down the data connector."""
         self.dc.loop()
+        self.dc.close()
         self.dc = None
         Model.data_connector = None
     
@@ -201,6 +203,28 @@ class AbstractDCTest:
         self.setup_driver()
         still_new_user = User(username="Overall")
         self.assertTrue(new_user.id < still_new_user.id)
+    
+        self.assertTrue(new_user.id < still_new_user.id)
+    
+    def test_auto_increment_delete(self):
+        """Check that old IDs are not re-used after deletion.
+        
+        If we create a new user, an ID is allocated to it.  If we delete
+        it and create a different user, its ID should be different (the old
+        ID should not be used).
+        
+        """
+        # Create the first user
+        first_user = User(username="Uone")
+        uid = first_user.id
+        first_user.delete()
+        
+        # Reset the data connection
+        self.teardown_driver()
+        self.setup_driver()
+        second_user = User(username="Utwo")
+        self.assertTrue(second_user.id > uid)
+        self.assertRaises(ValueError, User.find, uid)
     
     def test_default(self):
         """Create a user to test the default value of 'password'."""

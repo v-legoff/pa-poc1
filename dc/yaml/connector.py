@@ -70,12 +70,6 @@ class YAMLConnector(DataConnector):
         self.auto_increments = {}
         self.to_update = set()
     
-    def destroy(self):
-        """Erase EVERY stored data."""
-        for file in os.listdir(self.location):
-            os.remove(self.location + "/" + file)
-        self.clear_cache()
-        
     def setup(self, location=None):
         """Setup the data connector."""
         if location is None:
@@ -105,6 +99,16 @@ class YAMLConnector(DataConnector):
         self.location = location
         self.files = {}
     
+    def close(self):
+        """Close the data connector (nothing to be done)."""
+        pass
+    
+    def destroy(self):
+        """Erase EVERY stored data."""
+        for file in os.listdir(self.location):
+            os.remove(self.location + "/" + file)
+        self.clear_cache()
+        
     def record_model(self, model):
         """Record the given model."""
         name = DataConnector.record_model(self, model)

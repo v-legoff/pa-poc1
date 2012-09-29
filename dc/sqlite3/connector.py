@@ -70,12 +70,6 @@ class Sqlite3Connector(DataConnector):
         self.location = None
         self.created_tables = ()
     
-    def destroy(self):
-        """Erase EVERY stored data."""
-        self.connection.close()
-        self.clear_cache()
-        os.remove(self.location)
-    
     def setup(self, location=None):
         """Setup the data connector."""
         if location is None:
@@ -95,6 +89,15 @@ class Sqlite3Connector(DataConnector):
         DataConnector.__init__(self)
         self.location = location
         self.connection = sqlite3.connect(self.location)
+    
+    def close(self):
+        """Close the data connector."""
+        self.connection.close()
+    
+    def destroy(self):
+        """Erase EVERY stored data."""
+        self.clear_cache()
+        os.remove(self.location)
     
     def record_tables(self, classes):
         """Record the tables."""

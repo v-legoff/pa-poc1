@@ -70,13 +70,6 @@ class MongoDBConnector(DataConnector):
         self.db_name = "data"
         self.inc_name = "increments"
     
-    def destroy(self):
-        """Erase EVERY stored data."""
-        self.connection.drop_database(self.db_name)
-        self.connection.drop_database(self.inc_name)
-        self.connection.close()
-        self.clear_cache()
-    
     def setup(self, datas=None, increments=None):
         """Setup the data connector."""
         datas = datas if datas else self.db_name
@@ -97,6 +90,17 @@ class MongoDBConnector(DataConnector):
         
         # Keep the IDs in cache
         self.object_ids = {}
+    
+    def close(self):
+        """Close the data connector."""
+        self.connection.close()
+    
+    def destroy(self):
+        """Erase EVERY stored data."""
+        self.connection.drop_database(self.db_name)
+        self.connection.drop_database(self.inc_name)
+        self.connection.close()
+        self.clear_cache()
     
     def record_model(self, model):
         """Record the given model."""
