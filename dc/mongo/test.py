@@ -26,30 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This temporary script contains a light demonstration of the POC ability.
+"""Test for the sqlite3 data connector."""
 
-It needs the 'datas' subdirectory, created in this directory
-and the user.yml file, included in the repository.
+from unittest import TestCase
 
-"""
+from dc.test import AbstractDCTest
+from dc.mongo.connector import MongoDBConnector
 
-from model import *
-from dc.mongo import MongoDBConnector
-from tools.console import Console
-
-class User(Model):
+class DCTest(AbstractDCTest, TestCase):
     
-    """A user model."""
-    
-    username = String()
-    
-    def __repr__(self):
-        return "<user id={}, username={}>".format(self.id, repr(self.username))
-
-# Load the stored datas
-connector = MongoDBConnector()
-Model.data_connector = connector
-connector.setup()
-connector.record_tables([User])
-console = Console({"Model": Model, "User": User})
-console.launch()
+    name = "mongo"
+    connector = MongoDBConnector

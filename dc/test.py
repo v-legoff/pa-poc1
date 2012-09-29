@@ -181,7 +181,7 @@ class AbstractDCTest:
         self.assertEqual(len(uids), len(users))
     
     def test_auto_increment(self):
-        """Test the bood behavior of a autoincrement field.
+        """Test the good behavior of a autoincrement field.
         
         First, we get the user with the highest id.  When we create
         another user, its id should be greater than the previous one.

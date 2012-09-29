@@ -1,0 +1,5 @@
+# Collection's name for storing datas
+datas: "datas"
+
+# Collection's name for storing auto increments
+increments: "increments"

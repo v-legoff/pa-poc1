@@ -26,30 +26,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This temporary script contains a light demonstration of the POC ability.
+"""Package defining the data connector for mongoDB.
 
-It needs the 'datas' subdirectory, created in this directory
-and the user.yml file, included in the repository.
+The data connector (subclass of DataConnector) is described in
+the file ./connector.py .
 
 """
 
-from model import *
-from dc.mongo import MongoDBConnector
-from tools.console import Console
-
-class User(Model):
-    
-    """A user model."""
-    
-    username = String()
-    
-    def __repr__(self):
-        return "<user id={}, username={}>".format(self.id, repr(self.username))
-
-# Load the stored datas
-connector = MongoDBConnector()
-Model.data_connector = connector
-connector.setup()
-connector.record_tables([User])
-console = Console({"Model": Model, "User": User})
-console.launch()
+from dc.mongo.connector import MongoDBConnector
