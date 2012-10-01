@@ -57,6 +57,7 @@ class Sqlite3Connector(DataConnector):
     
     """
     
+    name = "sqlite3"
     def __init__(self):
         """Check the driver presence.
         

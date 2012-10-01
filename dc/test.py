@@ -98,25 +98,8 @@ class AbstractDCTest:
         the default configuration found in dc/{driver_name}/parameters.yml.
         
         """
-        cfg_dir = "test/dc"
-        cfg_path = cfg_dir + "/" + self.name + ".yml"
-        def_cfg_path = "dc/" + self.name + "/parameters.yml"
-        if not os.path.exists(cfg_path):
-            if not os.path.exists(cfg_dir):
-                os.makedirs(cfg_dir)
-            
-            with open(def_cfg_path, "r") as cfg_file:
-                cfg_content = cfg_file.read()
-            
-            with open(cfg_path, "w") as cfg_file:
-                cfg_file.write(cfg_content)
-        else:
-            with open(cfg_path, "r") as cfg_file:
-                cfg_content = cfg_file.read()
-        
-        cfg_dict = yaml.load(cfg_content)
         self.dc = type(self).connector()
-        self.dc.setup(**cfg_dict)
+        self.dc.setup_test()
         self.dc.record_tables(models)
         Model.data_connector = self.dc
     

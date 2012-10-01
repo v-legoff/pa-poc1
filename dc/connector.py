@@ -28,6 +28,9 @@
 
 """This file contains the DataConnector class, defined below."""
 
+import os
+import yaml
+
 from model.functions import *
 
 class DataConnector:
@@ -48,12 +51,38 @@ class DataConnector:
     
     """
     
+    name = "unspecified"
     def __init__(self):
         """Initialize the data connector."""
         self.running = False
         self.objects_tree = {}
         self.tables = {}
         self.deleted_objects = []
+    
+    def setup(self):
+        """Setup the data connector."""
+        raise NotImplementedError
+    
+    def setup_test(self):
+        """Setup the data connector with test information."""
+        cfg_dir = "test/dc"
+        cfg_path = cfg_dir + "/" + self.name + ".yml"
+        def_cfg_path = "dc/" + self.name + "/parameters.yml"
+        if not os.path.exists(cfg_path):
+            if not os.path.exists(cfg_dir):
+                os.makedirs(cfg_dir)
+            
+            with open(def_cfg_path, "r") as cfg_file:
+                cfg_content = cfg_file.read()
+            
+            with open(cfg_path, "w") as cfg_file:
+                cfg_file.write(cfg_content)
+        else:
+            with open(cfg_path, "r") as cfg_file:
+                cfg_content = cfg_file.read()
+        
+        cfg_dict = yaml.load(cfg_content)
+        self.setup(**cfg_dict)
     
     def close(self):
         """Close the data connector (the database connection for instance)."""

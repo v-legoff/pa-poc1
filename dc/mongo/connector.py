@@ -56,6 +56,7 @@ class MongoDBConnector(DataConnector):
     
     """
     
+    name = "mongo"
     def __init__(self):
         """Check the driver presence.
         

@@ -34,22 +34,14 @@ and the user.yml file, included in the repository.
 """
 
 from model import *
-from dc.mongo import MongoDBConnector
+from model.test import User
+from dc import connectors
 from tools.console import Console
 
-class User(Model):
-    
-    """A user model."""
-    
-    username = String()
-    
-    def __repr__(self):
-        return "<user id={}, username={}>".format(self.id, repr(self.username))
-
 # Load the stored datas
-connector = MongoDBConnector()
+connector = connectors["sqlite3"]()
 Model.data_connector = connector
-connector.setup()
+connector.setup_test()
 connector.record_tables([User])
 console = Console({"Model": Model, "User": User})
 console.launch()

@@ -35,8 +35,12 @@ described in the ./connector.py file.
 
 """
 
-from dc.mysql import MySQLConnector
+from dc.mongo import MongoDBConnector
+from dc.sqlite3 import Sqlite3Connector
+from dc.yaml import YAMLConnector
 
 connectors = {
-    "mysql": MySQLConnector,
+    "mongo": MongoDBConnector,
+    "sqlite3": Sqlite3Connector,
+    "yaml": YAMLConnector,
 }

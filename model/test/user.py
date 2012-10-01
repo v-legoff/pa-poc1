@@ -37,3 +37,7 @@ class User(Model):
     
     def __repr__(self):
         return "<user id={}, username={}>".format(self.id, repr(self.username))
+    
+    def create_test(i):
+        """Create an user."""
+        return User(username="test_" + str(i))

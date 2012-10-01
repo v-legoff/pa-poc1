@@ -56,6 +56,7 @@ class YAMLConnector(DataConnector):
     
     """
     
+    name = "yaml"
     def __init__(self):
         """Check the driver presence.
         
