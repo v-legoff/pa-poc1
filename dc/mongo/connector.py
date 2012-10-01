@@ -95,6 +95,15 @@ class MongoDBConnector(DataConnector):
         """Close the data connector."""
         self.connection.close()
     
+    def clear(self):
+        """Clear the stored datas."""
+        for name in self.tables.keys():
+            self.datas[name].remove({})
+            self.datas.drop_collection(name)
+            self.increments[name].remove({})
+            self.increments.drop_collection(name)
+        DataConnector.clear(self)
+    
     def destroy(self):
         """Erase EVERY stored data."""
         self.connection.drop_database(self.db_name)
@@ -205,5 +214,5 @@ class MongoDBConnector(DataConnector):
         DataConnector.delete(self, object)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]
-        self.datas[name].remove(m_id)
+        self.datas[name].remove(m_id, safe=True)
         del self.object_ids[name][object]

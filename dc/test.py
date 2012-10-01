@@ -83,12 +83,12 @@ class AbstractDCTest:
     def setUp(self):
         """Set up the driver."""
         self.setup_driver()
+        self.dc.clear()
     
     def tearDown(self):
         """Destroy the data connector and tear it down."""
         dc = self.dc
-        self.teardown_driver()
-        dc.destroy()
+        self.teardown_driver(destroy=True)
     
     def setup_driver(self):
         """Setup the driver.
@@ -120,9 +120,12 @@ class AbstractDCTest:
         self.dc.record_tables(models)
         Model.data_connector = self.dc
     
-    def teardown_driver(self):
+    def teardown_driver(self, destroy=False):
         """Tear down the data connector."""
         self.dc.loop()
+        if destroy:
+            self.dc.destroy()
+        
         self.dc.close()
         self.dc = None
         Model.data_connector = None

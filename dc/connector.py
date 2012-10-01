@@ -59,6 +59,11 @@ class DataConnector:
         """Close the data connector (the database connection for instance)."""
         raise NotImplementedError
     
+    def clear(self):
+        """Clear the stored datas and register the models."""
+        self.objects_tree = {}
+        self.record_tables(list(self.tables.values()))
+    
     def destroy(self):
         """Destroy and erase EVERY stored data."""
         raise NotImplementedError

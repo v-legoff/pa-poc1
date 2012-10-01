@@ -97,6 +97,7 @@ class Sqlite3Connector(DataConnector):
     def destroy(self):
         """Erase EVERY stored data."""
         self.clear_cache()
+        self.connection.close()
         os.remove(self.location)
     
     def record_tables(self, classes):
