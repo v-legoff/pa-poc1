@@ -67,7 +67,7 @@ class MongoDBConnector(DataConnector):
                     "the pymongo library can not be found")
         
         DataConnector.__init__(self)
-        self.db_name = "data"
+        self.db_name = "datas"
         self.inc_name = "increments"
     
     def setup(self, datas=None, increments=None):
@@ -110,6 +110,27 @@ class MongoDBConnector(DataConnector):
         self.inc_collections[name] = self.increments[name]
         self.object_ids[name] = {}
     
+    def get_and_update_increment(self, table, field):
+        """Get and update an auto-increment field.
+        
+        If not found in the specified table, return 1 but update to 2.
+        
+        """
+        value = self.increments[table].find_one({
+                "name": field})
+        if value:
+            value = value["current"]
+        else:
+            value = 1
+        
+        self.increments[table].remove({"name": field})
+        self.increments[table].insert({
+                "name": field,
+                "current": value + 1,
+        })
+        
+        return value
+    
     def find(self, model, pkey_values):
         """Return, if found, the selected object.
         
@@ -128,7 +149,7 @@ class MongoDBConnector(DataConnector):
             m_id = datas["_id"]
             del datas["_id"]
             object = model()
-            object.__dict__.update(datas)
+            update(object, datas)
             self.cache_object(object)
             self.object_ids[name][object] = m_id
             return object
@@ -143,20 +164,8 @@ class MongoDBConnector(DataConnector):
             if not field.auto_increment:
                 continue
             
-            value = self.increments[name].find_one({
-                    "name": field.field_name})
-            if value:
-                value = value["current"]
-            else:
-                value = 1
-            
-            self.increments[name].remove({"name": field.field_name})
-            self.increments[name].insert({
-                    "name": field.field_name,
-                    "current": value + 1,
-            })
-            
-            object.__setattr__(mod_object, field.field_name, value)
+            value = self.get_and_update_increment(name, field.field_name)
+            update_attr(mod_object, field.field_name, value)
         
         m_id = self.datas[name].insert(mod_object.__dict__)
         self.cache_object(mod_object)
@@ -173,7 +182,7 @@ class MongoDBConnector(DataConnector):
             object = self.get_from_cache(model, data)
             if object is None:
                 object = model()
-                object.__dict__.update(data)
+                update(object, data)
                 self.cache_object(object)
                 self.object_ids[name][object] = m_id
             
@@ -196,5 +205,5 @@ class MongoDBConnector(DataConnector):
         DataConnector.delete(self, object)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]
-        self.datas[name].remove({"_id": m_id})
+        self.datas[name].remove(m_id)
         del self.object_ids[name][object]

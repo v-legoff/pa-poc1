@@ -34,6 +34,8 @@ Functions defined here:
     get_plural_name(class) -- return the plural class name
     get_pkey_names -- return a list of primary key fields name
     get_pkey_values -- return a list of primary key fields values
+    update_attr -- update an object attribute
+    update -- update a whole object
 
 """
 
@@ -91,3 +93,19 @@ def get_pkey_values(object):
     p_fields = [field.field_name for field in fields if field.pkey]
     p_fields = [getattr(object, field) for field in p_fields]
     return tuple(p_fields)
+
+def update_attr(to_update, attribute, value):
+    """Update the object passed as first argument.
+    
+    NOTE: this function is really close to 'setattr' but it only writes
+    the new attribute in the object, without calling its '__setattr__'
+    magic method, which is useful for a model if you don't want to
+    update it in the data connector.
+    
+    """
+    object.__setattr__(to_update, attribute, value)
+
+def update(to_update, dict_of_values):
+    """Update the attributes of an object using update_attr."""
+    for name, value in dict_of_values.items():
+        update_attr(to_update, name, value)
