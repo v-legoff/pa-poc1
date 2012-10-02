@@ -65,7 +65,7 @@ class DataConnector:
     
     def setup_test(self):
         """Setup the data connector with test information."""
-        cfg_dir = "test/config/dc"
+        cfg_dir = "tests/config/dc"
         cfg_path = cfg_dir + "/" + self.name + ".yml"
         def_cfg_path = "dc/" + self.name + "/parameters.yml"
         if not os.path.exists(cfg_path):
