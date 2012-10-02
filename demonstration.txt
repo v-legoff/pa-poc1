@@ -1,4 +1,3 @@
-
 This first Proof Of Concept must study the models structure and provide
 an easy-to-use API (and Python console).
 1. The model structure must be developed and tested.  Even if no
@@ -21,3 +20,38 @@ Note: The future POCs should, if appliable, use the preview POCs to
       propose more functionalities.  This means that the directory
       structure, classes name and so forth could be changed, but
       those changes should be avoided if possible.
+
+Final: Proof of Concept completed (2012-10-02):
+
+1. The data connectors
+   
+   The data connectors allow to store and retrieve datas.  The first
+   and most simple data connector created allow to store datas in
+   YML files.  Another one uses sqlite3 and a third one uses MongoDB.
+   To check that all these data connectors provide the same basic
+   abilities, some unit tests were written and are automaticcaly
+   checked through the unittest module, run:
+   $ python -m unittest
+   
+   The MySQL data connector could not be developed due to some
+   difficulties to find an Open-Source (licensed under BSD or MIT
+   for legal reasons) library that would provide access to MySQL
+   using Python 3.  However, the three developed data connectors
+   show a proof of compatibility for *SQL and NoSQL tools (such
+   as MongoDB).
+   
+2. The Model API
+   
+   The Model class provides a few methods to easily access
+   objects.  Class methods are used to manipulate the set of objects
+   (find, get_all) and instance methods are used to manipulate a
+   single object.  The __init__ constructor is used to create an
+   object, the __setattr__ method is used to update it and the
+   delete method is used to delete the object.
+   
+3. The Python console tool
+   
+   A simple tool, developed in tools/console.py and directly called
+   in the launch.py file was created to interact with the Model
+   structure through a Python console.  Thus, creating, updating,
+   deleting, finding objects is as easy as calling a Python method.
