@@ -101,13 +101,13 @@ class Sqlite3Connector(DataConnector):
         self.connection.close()
         os.remove(self.location)
     
-    def record_tables(self, classes):
+    def record_models(self, models):
         """Record the tables."""
         cursor = self.connection.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = [row[0] for row in cursor.fetchall()]
         self.created_tables = tuple(tables)
-        DataConnector.record_tables(self, classes)
+        DataConnector.record_models(self, models)
         self.connection.commit()
     
     def record_model(self, model):
@@ -139,7 +139,29 @@ class Sqlite3Connector(DataConnector):
         """Commit the database."""
         self.connection.commit()
     
-    def find(self, model, pkey_values):
+    def get_all_objects(self, model):
+        """Return all the model's objects in a list."""
+        name = get_name(model)
+        plural_name = get_plural_name(model)
+        fields = get_fields(model)
+        objects = []
+        query = "SELECT * FROM " + plural_name
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        for row in cursor.fetchall():
+            dict_fields = {}
+            for i, field in enumerate(fields):
+                dict_fields[field.field_name] = row[i]
+            
+            object = self.get_from_cache(model, dict_fields)
+            if object is None:
+                object = model.build(**dict_fields)
+                self.cache_object(object)
+            objects.append(object)
+        
+        return objects
+    
+    def find_object(self, model, pkey_values):
         """Return, if found, the specified object."""
         # First, look for the object in the cached tree
         pkey_values_list = list(pkey_values.values())
@@ -169,7 +191,7 @@ class Sqlite3Connector(DataConnector):
         self.cache_object(object)
         return object
     
-    def register_object(self, object):
+    def add_object(self, object):
         """Save the object, issued from a model."""
         name = get_name(type(object))
         fields = get_fields(type(object))
@@ -196,35 +218,13 @@ class Sqlite3Connector(DataConnector):
             cursor.execute(query)
             row = cursor.fetchone()
             value = row[0]
-            setattr(object, field, value)
+            update_attr(object, field, value)
         
         self.cache_object(object)
     
-    def get_all(self, model):
-        """Return all the model's objects in a list."""
-        name = get_name(model)
-        plural_name = get_plural_name(model)
-        fields = get_fields(model)
-        objects = []
-        query = "SELECT * FROM " + plural_name
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        for row in cursor.fetchall():
-            dict_fields = {}
-            for i, field in enumerate(fields):
-                dict_fields[field.field_name] = row[i]
-            
-            object = self.get_from_cache(model, dict_fields)
-            if object is None:
-                object = model.build(**dict_fields)
-                self.cache_object(object)
-            objects.append(object)
-        
-        return objects
-    
-    def update(self, object, attribute):
+    def update_object(self, object, attribute):
         """Update an object."""
-        DataConnector.update(self, object, attribute)
+        self.check_update(object)
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)] + list(get_pkey_values(object))
@@ -234,7 +234,7 @@ class Sqlite3Connector(DataConnector):
         cursor = self.connection.cursor()
         cursor.execute(query, tuple(params))
     
-    def delete(self, object):
+    def remove_object(self, object):
         """Delete the object."""
         name = get_name(type(object))
         plural_name = get_plural_name(type(object))
@@ -247,4 +247,4 @@ class Sqlite3Connector(DataConnector):
         cursor.execute(query, values)
         
         # Delete from cache
-        DataConnector.delete(self, object)
+        self.uncache_object(object)

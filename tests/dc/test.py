@@ -100,7 +100,7 @@ class AbstractDCTest:
         """
         self.dc = type(self).connector()
         self.dc.setup_test()
-        self.dc.record_tables(models)
+        self.dc.record_models(models)
         Model.data_connector = self.dc
     
     def teardown_driver(self, destroy=False):

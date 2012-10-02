@@ -35,7 +35,7 @@ from model.functions import *
 
 class DataConnector:
     
-    """Class representing a data connector, a wrapper of a data access.
+    """Class representing a data connector, a wrapper to access datas.
     
     The DataConnector is an abstrat class, which SHOULD NOT be
     instanciated, but inherited from the usable data connectors.
@@ -43,10 +43,27 @@ class DataConnector:
     as a SQL driver or alike.
     
     Method to define in the subclass:
-        __init__(config) -- the constructor (only called at runtime)
-        connect() -- connect (to) the data connector
-        disconnect() -- close the connexion to the data connector
+        __init__(self) -- mainly check (if needed) the driver presence
+        setup(self) -- setup the data connector
+        setup_test(self) -- setup the driver with test configurations
+        close(self) -- close the data connector (close connection if needed)
+        clear(self) -- clear the stored datas (ERASE ALL)
+        destroy(self) -- destroy the data connector and clear all datas
+        record_models(self, models) -- record the given models
+        record_model(self, model) -- record a specifid model
+        get_all_objects(self, model) -- return all model's objects
+        find_object(self, model, pkey_values) -- find an object
+        add_object(self, object) -- save a new object
+        update_object(self, object, attribute) -- update an object
+        remove_object(self, object) -- delete a stored object
     
+    In addition, the created or retrieved objects are stored in cache.
+    Methods to access or manipulate cached objects:
+        get_from_cache(self, model, primary_attributes)
+        cache_object(self, object)
+        uncache(self, object)
+        clear_cache(self)
+        
     For more informations, see the details of each method.
     
     """
@@ -56,7 +73,7 @@ class DataConnector:
         """Initialize the data connector."""
         self.running = False
         self.objects_tree = {}
-        self.tables = {}
+        self.models = {}
         self.deleted_objects = []
     
     def setup(self):
@@ -91,20 +108,20 @@ class DataConnector:
     def clear(self):
         """Clear the stored datas and register the models."""
         self.objects_tree = {}
-        self.record_tables(list(self.tables.values()))
+        self.record_models(list(self.models.values()))
     
     def destroy(self):
         """Destroy and erase EVERY stored data."""
         raise NotImplementedError
     
-    def record_tables(self, classes):
-        """Record the given classes.
+    def record_models(self, models):
+        """Record the given models.
         
         The parameter must be a list of classes. Each class must
         be a model.
         
         """
-        for model in classes:
+        for model in models:
             self.record_model(model)
         
         self.running = True
@@ -112,7 +129,7 @@ class DataConnector:
     def record_model(self, model):
         """Record the given model, a subclass of model.Model."""
         name = get_name(model)
-        self.tables[name] = model
+        self.models[name] = model
         self.objects_tree[name] = {}
         return name
     
@@ -120,7 +137,11 @@ class DataConnector:
         """Record some datas or commit some changes if necessary."""
         pass
     
-    def find(self, model, pkey_values):
+    def get_all_objects(self, model):
+        """Return all the model's object in a list."""
+        raise NotImplementedError
+    
+    def find_object(self, model, pkey_values):
         """Return, if found, the selected object.
         
         Raise a model.exceptions.ObjectNotFound if not found.
@@ -128,14 +149,23 @@ class DataConnector:
         """
         raise NotImplementedError
     
-    def was_deleted(self, object):
-        """Return whether the object was deleted (uncached)."""
-        name = get_name(type(object))
-        values = tuple(get_pkey_values(object))
-        if len(values) == 1:
-            values = values[0]
+    def add_object(self, object):
+        """Save the object, issued from a model.
         
-        return (name, values) in self.deleted_objects
+        Usually this method should:
+        -   Save the object (in a database, for instance)
+        -   Cache the object.
+        
+        """
+        raise NotImplementedError
+    
+    def update_object(self, object, attribute):
+        """Update an object."""
+        raise NotImplementedError
+    
+    def remove_object(self, object):
+        """Delete object from cache."""
+        raise NotImplementedError
     
     def get_from_cache(self, model, attributes):
         """Return, if found, the cached object.
@@ -178,26 +208,17 @@ class DataConnector:
         """Clear the cache."""
         self.objects_tree = {}
     
-    def register_object(self, object):
-        """Save the object, issued from a model.
-        
-        Usually this method should:
-        -   Save the object (in a database, for instance)
-        -   Cache the object.
-        
-        """
-        raise NotImplementedError
-    
-    def get_all(self, model):
-        """Return all the model's object in a list."""
-        raise NotImplementedError
-    
-    def update(self, object, attribute):
-        """Update an object."""
+    def check_update(self, object):
+        """Raise a ValueError if the object was deleted."""
         if self.was_deleted(object):
             raise ValueError("the object {} was deleted, can't update " \
                     "it".format(repr(object)))
     
-    def delete(self, object):
-        """Delete object from cache."""
-        self.uncache_object(object)
+    def was_deleted(self, object):
+        """Return whether the object was deleted (uncached)."""
+        name = get_name(type(object))
+        values = tuple(get_pkey_values(object))
+        if len(values) == 1:
+            values = values[0]
+        
+        return (name, values) in self.deleted_objects

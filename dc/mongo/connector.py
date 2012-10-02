@@ -98,8 +98,8 @@ class MongoDBConnector(DataConnector):
     
     def clear(self):
         """Clear the stored datas."""
-        for name in self.tables.keys():
-            self.datas[name].remove({})
+        for name in self.models.keys():
+            self.datas[name].remove()
             self.datas.drop_collection(name)
             self.increments[name].remove({})
             self.increments.drop_collection(name)
@@ -141,7 +141,26 @@ class MongoDBConnector(DataConnector):
         
         return value
     
-    def find(self, model, pkey_values):
+    def get_all_objects(self, model):
+        """Return all the model's object in a list."""
+        name = get_name(model)
+        datas = self.datas[name].find()
+        objects = []
+        for data in datas:
+            m_id = data["_id"]
+            del data["_id"]
+            object = self.get_from_cache(model, data)
+            if object is None:
+                object = model()
+                update(object, data)
+                self.cache_object(object)
+                self.object_ids[name][object] = m_id
+            
+            objects.append(object)
+        
+        return objects
+    
+    def find_object(self, model, pkey_values):
         """Return, if found, the selected object.
         
         Raise a model.exceptions.ObjectNotFound if not found.
@@ -166,7 +185,7 @@ class MongoDBConnector(DataConnector):
         
         raise ValueError("not found")
     
-    def register_object(self, mod_object):
+    def add_object(self, mod_object):
         """Save the object, issued from a model."""
         name = get_name(type(mod_object))
         fields = get_fields(type(mod_object))
@@ -181,38 +200,19 @@ class MongoDBConnector(DataConnector):
         self.cache_object(mod_object)
         self.object_ids[name][mod_object] = m_id
     
-    def get_all(self, model):
-        """Return all the model's object in a list."""
-        name = get_name(model)
-        datas = self.datas[name].find()
-        objects = []
-        for data in datas:
-            m_id = data["_id"]
-            del data["_id"]
-            object = self.get_from_cache(model, data)
-            if object is None:
-                object = model()
-                update(object, data)
-                self.cache_object(object)
-                self.object_ids[name][object] = m_id
-            
-            objects.append(object)
-        
-        return objects
-    
-    def update(self, object, attribute):
+    def update_object(self, object, attribute):
         """Update an object."""
-        DataConnector.update(self, object, attribute)
+        self.check_update(object)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]
         f_update = dict(object.__dict__)
         f_update["_id"] = m_id
         self.datas[name].update({"_id": m_id}, f_update)
     
-    def delete(self, object):
+    def remove_object(self, object):
         """Delete the object."""
         # Delete from cache
-        DataConnector.delete(self, object)
+        self.uncache_object(object)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]
         self.datas[name].remove(m_id, safe=True)

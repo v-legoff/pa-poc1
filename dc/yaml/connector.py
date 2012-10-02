@@ -139,7 +139,7 @@ class YAMLConnector(DataConnector):
                     "the file {} must contain a YAML formatted list".format(
                     self.files[name]))
         
-        class_table = self.tables[name]
+        class_table = self.models[name]
         class_datas = datas[0]
         if not isinstance(class_datas, dict):
             raise exceptions.DataFormattingError(
@@ -193,7 +193,12 @@ class YAMLConnector(DataConnector):
         with open(self.location + "/" + name + ".yml", "w") as file:
             file.write(content)
     
-    def find(self, model, pkey_values):
+    def get_all_objects(self, model):
+        """Return all the model's object in a list."""
+        name = get_name(model)
+        return list(self.objects_tree.get(name, {}).values())
+    
+    def find_object(self, model, pkey_values):
         """Return, if found, the selected object.
         
         Raise a model.exceptions.ObjectNotFound if not found.
@@ -206,7 +211,7 @@ class YAMLConnector(DataConnector):
         
         raise ValueError("not found")
     
-    def register_object(self, object):
+    def add_object(self, object):
         """Save the object, issued from a model."""
         name = get_name(type(object))
         fields = get_fields(type(object))
@@ -216,27 +221,22 @@ class YAMLConnector(DataConnector):
                 continue
             
             value = auto_increments.get(field.field_name, 1)
-            setattr(object, field.field_name, value)
+            update_attr(object, field.field_name, value)
             auto_increments[field.field_name] = value + 1
         
         self.cache_object(object)
         self.auto_increments[name] = auto_increments
         self.to_update.add(name)
     
-    def get_all(self, model):
-        """Return all the model's object in a list."""
-        name = get_name(model)
-        return list(self.objects_tree.get(name, {}).values())
-    
-    def update(self, object, attribute):
+    def update_object(self, object, attribute):
         """Update an object."""
-        DataConnector.update(self, object, attribute)
+        self.check_update(object)
         name = get_name(type(object))
         self.to_update.add(name)
     
-    def delete(self, object):
+    def remove_object(self, object):
         """Delete the object."""
         # Delete from cache only
-        DataConnector.delete(self, object)
+        self.uncache_object(object)
         name = get_name(type(object))
         self.to_update.add(name)
