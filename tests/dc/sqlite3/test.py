@@ -30,10 +30,10 @@
 
 from unittest import TestCase
 
-from dc.test import AbstractDCTest
-from dc.yaml.connector import YAMLConnector
+from tests.dc.test import AbstractDCTest
+from dc.sqlite3.connector import Sqlite3Connector
 
 class DCTest(AbstractDCTest, TestCase):
     
-    name = "yaml"
-    connector = YAMLConnector
+    name = "sqlite3"
+    connector = Sqlite3Connector

@@ -49,7 +49,7 @@ import os
 import yaml
 
 from model import Model
-from model.test import *
+from tests.model import *
 
 class AbstractDCTest:
     

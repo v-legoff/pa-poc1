@@ -26,8 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the Model test and examples."""
+"""Test for the sqlite3 data connector."""
 
-from model.test.user import User
+from unittest import TestCase
 
-models = [User]
+from tests.dc.test import AbstractDCTest
+from dc.mongo.connector import MongoDBConnector
+
+class DCTest(AbstractDCTest, TestCase):
+    
+    name = "mongo"
+    connector = MongoDBConnector

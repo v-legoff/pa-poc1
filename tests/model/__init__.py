@@ -26,14 +26,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Test for the sqlite3 data connector."""
+"""This package contains the Model test and examples."""
 
-from unittest import TestCase
+from tests.model.user import User
 
-from dc.test import AbstractDCTest
-from dc.sqlite3.connector import Sqlite3Connector
-
-class DCTest(AbstractDCTest, TestCase):
-    
-    name = "sqlite3"
-    connector = Sqlite3Connector
+models = [User]

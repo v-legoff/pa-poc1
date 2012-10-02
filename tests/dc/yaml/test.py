@@ -30,10 +30,10 @@
 
 from unittest import TestCase
 
-from dc.test import AbstractDCTest
-from dc.mongo.connector import MongoDBConnector
+from tests.dc.test import AbstractDCTest
+from dc.yaml.connector import YAMLConnector
 
 class DCTest(AbstractDCTest, TestCase):
     
-    name = "mongo"
-    connector = MongoDBConnector
+    name = "yaml"
+    connector = YAMLConnector
