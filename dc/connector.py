@@ -31,6 +31,7 @@
 import os
 import yaml
 
+from model import exceptions as mod_exceptions
 from model.functions import *
 
 class DataConnector:
@@ -211,8 +212,7 @@ class DataConnector:
     def check_update(self, object):
         """Raise a ValueError if the object was deleted."""
         if self.was_deleted(object):
-            raise ValueError("the object {} was deleted, can't update " \
-                    "it".format(repr(object)))
+            raise mod_exceptions.UpdateDeletedObject(object)
     
     def was_deleted(self, object):
         """Return whether the object was deleted (uncached)."""

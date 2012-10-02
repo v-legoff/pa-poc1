@@ -26,11 +26,52 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package defining the data connector for the MySQL database.
+"""This module contains the exceptions raised when manipulation models.
 
-The data connector (subclass of DataConnector) is described in
-the file ./connector.py .
+Exception classes:
+    ModelException
+        ObjectNotFound
+        UpdateDeletedObject
 
 """
 
-from dc.mysql.connector import MySQLConnector
+class ModelException(RuntimeError):
+    
+    """Parent classes of all model exceptions."""
+    
+    pass
+
+class ObjectNotFound(ModelException):
+    
+    """Exception raised when an object can not be found.
+    
+    It stores the model and primary attributes.
+    
+    """
+    
+    def __init__(self, model=None, pkey_values=None):
+        self.model = model
+        self.pkey_values = pkey_values if pkey_values else {}
+    
+    def __str__(self):
+        msg = "can not find " + repr(self.model)
+        if self.pkey_values:
+            msg += " with "
+            attrs = []
+            for name, value in self.pkey_values.items():
+                attrs.append(name + "=" + repr(value))
+            
+            msg += " and ".join(attrs)
+        
+        return msg
+
+class UpdateDeletedObject(ModelException):
+    
+    """Exception raised when trying to update a deleted object."""
+    
+    def __init__(self, object):
+        self.object = object
+    
+    def __str__(self):
+        return "Try to update {} whereas it had been previously " \
+                "deleted".format(self.object)

@@ -33,15 +33,15 @@ and the user.yml file, included in the repository.
 
 """
 
-from model import *
-from model.test import User
 from dc import connectors
+from model import *
+from tests.model import User
 from tools.console import Console
 
 # Load the stored datas
-connector = connectors["sqlite3"]()
+connector = connectors["mongo"]()
 Model.data_connector = connector
 connector.setup_test()
-connector.record_tables([User])
+connector.record_models([User])
 console = Console({"Model": Model, "User": User})
 console.launch()

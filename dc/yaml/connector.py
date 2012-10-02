@@ -39,6 +39,7 @@ except ImportError:
 
 from dc.connector import DataConnector
 from dc import exceptions
+from model import exceptions as mod_exceptions
 from model.functions import *
 
 class YAMLConnector(DataConnector):
@@ -209,7 +210,7 @@ class YAMLConnector(DataConnector):
         if object:
             return object
         
-        raise ValueError("not found")
+        raise mod_exceptions.ObjectNotFound(model, pkey_values)
     
     def add_object(self, object):
         """Save the object, issued from a model."""

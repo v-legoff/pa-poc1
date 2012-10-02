@@ -48,6 +48,7 @@ class DCTest(AbstractDCTest, TestCase):
 import os
 import yaml
 
+from model import exceptions as mod_exceptions
 from model import Model
 from tests.model import *
 
@@ -157,7 +158,8 @@ class AbstractDCTest:
         """
         user = User(username="Noway")
         user.delete()
-        self.assertRaises(ValueError, setattr, user, "username", "no")
+        self.assertRaises(mod_exceptions.UpdateDeletedObject, setattr,
+                user, "username", "no")
     
     def test_primary_keys(self):
         """Test that no created user has the same ID as another."""
@@ -210,7 +212,7 @@ class AbstractDCTest:
         self.setup_driver()
         second_user = User(username="Utwo")
         self.assertTrue(second_user.id > uid)
-        self.assertRaises(ValueError, User.find, uid)
+        self.assertRaises(mod_exceptions.ObjectNotFound, User.find, uid)
     
     def test_default(self):
         """Create a user to test the default value of 'password'."""

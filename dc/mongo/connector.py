@@ -39,6 +39,7 @@ except ImportError:
 
 from dc.connector import DataConnector
 from dc import exceptions
+from model import exceptions as mod_exceptions
 from model.functions import *
 
 class MongoDBConnector(DataConnector):
@@ -177,13 +178,12 @@ class MongoDBConnector(DataConnector):
         if datas:
             m_id = datas["_id"]
             del datas["_id"]
-            object = model()
-            update(object, datas)
+            object = model.build(**datas)
             self.cache_object(object)
             self.object_ids[name][object] = m_id
             return object
         
-        raise ValueError("not found")
+        raise mod_exceptions.ObjectNotFound(model, pkey_values)
     
     def add_object(self, mod_object):
         """Save the object, issued from a model."""
