@@ -30,18 +30,21 @@
 
 Note that this class DOES NOT inherit from unittest.TestCase, being
 an abstract test.  If you create a new data connector and would like
-to test it, simply create a test.py file in your data connector package
-and create a class inherited from AbstractDCTest.
+to test it, simply create a __init__.py and test.py file in a sub-
+package called like your data connector.  In the test.py file,
+create a class inherited from AbstractDCTest.
 Your test.py file should contains something like:
-# Dont' forget the license and at least a line of documentation
+# Don't forget the license and at least a line of documentation
 
 from unittest import TestCase
 
-from dc.test import AbstractDCTest
+from tests.dc.test import AbstractDCTest
+from dc.{nour_connector} import {YourConnector}
 
 class DCTest(AbstractDCTest, TestCase):
     
     name = "dc_name"
+    connector = {YourConnector}
 
 """
 
@@ -57,7 +60,7 @@ class AbstractDCTest:
     """Abstract class for testing data connectors.
     
     This class is abstract.  It shouldn't be considered a regular
-    test case and doesn't have enough information to perform a test.
+    test case and doesn't have enough informations to perform a test.
     It's a base test for a data connector (each data connector should
     have a class inherited from it).  This allows to test different
     data connector to check that each one has the same basic abilities
@@ -82,21 +85,22 @@ class AbstractDCTest:
     """
     
     def setUp(self):
-        """Set up the driver."""
-        self.setup_driver()
+        """Set up the data connector."""
+        self.setup_data_connector()
         self.dc.clear()
     
     def tearDown(self):
         """Destroy the data connector and tear it down."""
         dc = self.dc
-        self.teardown_driver(destroy=True)
+        self.teardown_data_connector(destroy=True)
     
-    def setup_driver(self):
-        """Setup the driver.
+    def setup_data_connector(self):
+        """Setup the data_connector.
         
         If available, read the configuration file found in
-        test/dc/{driver_name}.yml.  Otherwise, the file is created with
-        the default configuration found in dc/{driver_name}/parameters.yml.
+        test/config/dc/{data_connector_name}.yml.  Otherwise, the
+        file is created with the default configuration found in
+        dc/{data_connector_name}/parameters.yml.
         
         """
         self.dc = type(self).connector()
@@ -104,7 +108,7 @@ class AbstractDCTest:
         self.dc.record_models(models)
         Model.data_connector = self.dc
     
-    def teardown_driver(self, destroy=False):
+    def teardown_data_connector(self, destroy=False):
         """Tear down the data connector."""
         self.dc.loop()
         if destroy:
@@ -137,8 +141,8 @@ class AbstractDCTest:
         uid = user.id
         username = user.username
         users = User.get_all()
-        self.teardown_driver()
-        self.setup_driver()
+        self.teardown_data_connector()
+        self.setup_data_connector()
         retrieved = User.find(uid)
         self.assertEqual(retrieved.id, uid)
         self.assertEqual(retrieved.username, username)
@@ -150,10 +154,6 @@ class AbstractDCTest:
         
         After the user was deleted, try to update it (which souldn't
         work).
-        
-        NOTE: the exception raised by now when a deleted object is
-        updated is ValuError, which is not appropriate.  Update the
-        test when necessary.
         
         """
         user = User(username="Noway")
@@ -187,8 +187,8 @@ class AbstractDCTest:
         self.assertTrue(max_user.id < new_user.id)
         
         # Reset the data connection
-        self.teardown_driver()
-        self.setup_driver()
+        self.teardown_data_connector()
+        self.setup_data_connector()
         still_new_user = User(username="Overall")
         self.assertTrue(new_user.id < still_new_user.id)
     
@@ -208,8 +208,8 @@ class AbstractDCTest:
         first_user.delete()
         
         # Reset the data connection
-        self.teardown_driver()
-        self.setup_driver()
+        self.teardown_data_connector()
+        self.setup_data_connector()
         second_user = User(username="Utwo")
         self.assertTrue(second_user.id > uid)
         self.assertRaises(mod_exceptions.ObjectNotFound, User.find, uid)

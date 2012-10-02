@@ -39,7 +39,7 @@ class Model(metaclass=MetaModel):
     """Abstract class for a model.
     
     Each model must inherit from it.  This class provides:
-    -   Methods to create, edit, update and delete objects
+    -   Methods to create, update and delete objects
     -   Methods to find and filter objects.
     
     The Model class use a DataConnector object to access datas (read and write

@@ -59,7 +59,7 @@ def get_plural_name(model):
     
     The plural name is:
         The value of the 'plural_name' class attribute if exists
-        The singular name extended with the 's / es' rule
+        The singular name extended with the 's / es' rule otherwise
     
     """
     if hasattr(model, "plural_name"):
@@ -84,7 +84,7 @@ def get_pkey_names(model):
 def get_pkey_values(object):
     """Return a tuple of datas (those defined as primary key).
     
-    NOTE: the 'get_fields_name' function expects a model as argument
+    NOTE: the 'get_pkeys_name' function expects a model as argument
     (a class).  This function, however, expects an object created on a
     Model class.
     

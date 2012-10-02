@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the exceptions raised when manipulation models.
+"""This module contains the exceptions raised when manipulating models.
 
 Exception classes:
     ModelException
